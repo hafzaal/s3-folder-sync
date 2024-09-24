@@ -34,34 +34,6 @@ def compare_bucket_folders(source_folders: set[str], dest_folders: set[str], s3_
 def main() -> None:
     s3 = boto3.client('s3')
 
-
-    ##
-    ## Get names of all objects in a bucket
-    ##
-    # response = s3.list_objects_v2(Bucket=DEV_BUCKET_NAME)
-    # if "Contents" in response:
-    #     for obj in response["Contents"]:
-    #         print(obj["Key"]) # pyright: ignore [reportTypedDictNotRequiredAccess]
-
-
-    ##
-    ## Get names of all objects that are folders in a bucket
-    ##
-    # response = s3.list_objects_v2(Bucket=PROD_BUCKET_NAME)
-    # if "Contents" in response:
-    #     for obj in response["Contents"]:
-    #         name: str = obj["Key"] # pyright: ignore [reportTypedDictNotRequiredAccess]
-    #         if name.endswith('/'):
-    #             print(name)
-
-
-    #
-    # List all buckets
-    #
-    # response = s3.list_buckets()
-    # for bucket in response["Buckets"]:
-    #     print(bucket["Name"]) # pyright: ignore [reportTypedDictNotRequiredAccess]
-
     source_folders: set[str] = get_bucket_folders(PROD_BUCKET_NAME, s3)
     dest_folders: set[str] = get_bucket_folders(DEV_BUCKET_NAME, s3)
     print(compare_bucket_folders(source_folders, dest_folders, s3))
