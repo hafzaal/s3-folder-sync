@@ -3,8 +3,8 @@ from mypy_boto3_s3.client import S3Client
 
 from typing import Any
 
-DEV_BUCKET_NAME : str = "b1-ncloud-dev"
-PROD_BUCKET_NAME : str = "b2-ncloud-prod"
+SOURCE_BUCKET : str = "b2-ncloud-prod"
+DESTINATION_BUCKET : str = "b1-ncloud-dev"
 
 
 def get_bucket_folders(bucket_name: str, s3_client: S3Client) -> set[str]:
@@ -22,7 +22,7 @@ def get_bucket_folders(bucket_name: str, s3_client: S3Client) -> set[str]:
 
     return folder_paths
 
-def compare_bucket_folders(source_folders: set[str], dest_folders: set[str], s3_client: S3Client) -> list[str]:
+def compare_bucket_folders(source_folders: set[str], dest_folders: set[str]) -> list[str]:
     missing_folders: list[str] = []
 
     for path in source_folders:
@@ -31,12 +31,30 @@ def compare_bucket_folders(source_folders: set[str], dest_folders: set[str], s3_
     
     return missing_folders
 
+def add_missing_folders(dest_bucket: str, missing_folders: list[str], s3_client: S3Client) -> None:
+    count: int = 0
+    if not missing_folders:
+        print("All folders already exist in destination bucket.")
+        return
+    for item in missing_folders:
+        s3_client.put_object(Bucket=dest_bucket, Key=item)
+        count += 1
+    print(f"{count} folders added to bucket:{dest_bucket}")
+
+
 def main() -> None:
     s3 = boto3.client('s3')
 
-    source_folders: set[str] = get_bucket_folders(PROD_BUCKET_NAME, s3)
-    dest_folders: set[str] = get_bucket_folders(DEV_BUCKET_NAME, s3)
-    print(compare_bucket_folders(source_folders, dest_folders, s3))
+    source_folders: set[str] = get_bucket_folders(SOURCE_BUCKET, s3)
+    dest_folders: set[str] = get_bucket_folders(DESTINATION_BUCKET, s3)
+    missing_folders: list[str] = compare_bucket_folders(source_folders, dest_folders)
+    
+    print(missing_folders)
+    add_missing_folders(DESTINATION_BUCKET, missing_folders, s3)
+    dest_folders = get_bucket_folders(DESTINATION_BUCKET, s3)
+    missing_folders = compare_bucket_folders(source_folders, dest_folders)
+    print(missing_folders)
+
 
 if __name__ == "__main__":
     main()
