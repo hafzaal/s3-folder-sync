@@ -22,6 +22,15 @@ def get_bucket_folders(bucket_name: str, s3_client: S3Client) -> set[str]:
 
     return folder_paths
 
+def compare_bucket_folders(source_folders: set[str], dest_folders: set[str], s3_client: S3Client) -> list[str]:
+    missing_folders: list[str] = []
+
+    for path in source_folders:
+        if path not in dest_folders:
+            missing_folders.append(path)
+    
+    return missing_folders
+
 def main() -> None:
     s3 = boto3.client('s3')
 
@@ -53,6 +62,9 @@ def main() -> None:
     # for bucket in response["Buckets"]:
     #     print(bucket["Name"]) # pyright: ignore [reportTypedDictNotRequiredAccess]
 
+    source_folders: set[str] = get_bucket_folders(PROD_BUCKET_NAME, s3)
+    dest_folders: set[str] = get_bucket_folders(DEV_BUCKET_NAME, s3)
+    print(compare_bucket_folders(source_folders, dest_folders, s3))
 
 if __name__ == "__main__":
     main()
