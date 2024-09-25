@@ -3,7 +3,7 @@ from mypy_boto3_s3.client import S3Client
 
 from typing import Any
 
-SOURCE_BUCKET : str = "b2-ncloud-prod"
+SOURCE_BUCKET : str = "b2-nc-prod"
 DESTINATION_BUCKET : str = "b1-ncloud-dev"
 
 
@@ -31,27 +31,34 @@ def compare_bucket_folders(source_folders: set[str], dest_folders: set[str]) -> 
     
     return missing_folders
 
-def add_missing_folders(dest_bucket: str, missing_folders: list[str], s3_client: S3Client) -> None:
+def add_missing_folders(dest_bucket: str, missing_folders: list[str], dest_s3_client: S3Client) -> None:
     count: int = 0
     if not missing_folders:
         print("All folders already exist in destination bucket.")
         return
     for item in missing_folders:
-        s3_client.put_object(Bucket=dest_bucket, Key=item)
+        dest_s3_client.put_object(Bucket=dest_bucket, Key=item)
         count += 1
     print(f"{count} folders added to bucket:{dest_bucket}")
 
 
 def main() -> None:
-    s3 = boto3.client('s3')
+    dev_session = boto3.Session(profile_name='dev')
+    s3_dev = dev_session.client('s3')
 
-    source_folders: set[str] = get_bucket_folders(SOURCE_BUCKET, s3)
-    dest_folders: set[str] = get_bucket_folders(DESTINATION_BUCKET, s3)
+    prod_session = boto3.Session(profile_name='prod')
+    s3_prod = prod_session.client('s3')
+
+    
+
+    source_folders: set[str] = get_bucket_folders(SOURCE_BUCKET, s3_prod)
+    dest_folders: set[str] = get_bucket_folders(DESTINATION_BUCKET, s3_dev)
     missing_folders: list[str] = compare_bucket_folders(source_folders, dest_folders)
     
     print(missing_folders)
-    add_missing_folders(DESTINATION_BUCKET, missing_folders, s3)
-    dest_folders = get_bucket_folders(DESTINATION_BUCKET, s3)
+    add_missing_folders(DESTINATION_BUCKET, missing_folders, s3_dev)
+    
+    dest_folders = get_bucket_folders(DESTINATION_BUCKET, s3_dev)
     missing_folders = compare_bucket_folders(source_folders, dest_folders)
     print(missing_folders)
 
