@@ -14,40 +14,25 @@ DESTINATION_PROFILE: str = "dev"
 # while, response.commonprefix isn't empty
 # We keep doing this until we have all the subfolders.
 
-def lookup_subfolders(prefix: str, bucket_name: str, s3_client: S3Client, folder_paths: set[str]) -> None:
-    response = s3_client.list_objects_v2(Bucket=bucket_name,
-                                         Prefix=prefix,
-                                         Delimiter='/')
-
-    subfolders = response.get("CommonPrefixes", None) # pyright: ignore [reportTypedDictNotRequiredAccess]
-    if subfolders is None:
-        return
-    for folder in subfolders:
-        folder_name: str = folder["Prefix"] # pyright: ignore [reportTypedDictNotRequiredAccess]
-        folder_paths.add(folder_name)
-        lookup_subfolders(folder_name, bucket_name, s3_client, folder_paths)
+def lookup_subfolders(current_folder: str, bucket_name: str, s3_client: S3Client, folder_paths: set[str]) -> None:
+    paginator = s3_client.get_paginator('list_objects_v2')
+    for page in paginator.paginate(Bucket=bucket_name, Prefix=current_folder, Delimiter='/'):
+        subfolders = page.get("CommonPrefixes", None) # pyright: ignore [reportTypedDictNotRequiredAccess]
+        if subfolders is None:
+            return
+        for folder in subfolders:
+            folder_name: str = folder["Prefix"] # pyright: ignore [reportTypedDictNotRequiredAccess]
+            folder_paths.add(folder_name)
+            lookup_subfolders(folder_name, bucket_name, s3_client, folder_paths)
 
 
 def get_bucket_folders(bucket_name: str, s3_client: S3Client) -> set[str]:
     folder_paths: set[str] = set()
-
-    # response = s3_client.list_objects_v2(Bucket=bucket_name,
-    #                                      Prefix="",
-    #                                      Delimiter='/')
-    # subfolders = response["CommonPrefixes"] # pyright: ignore [reportTypedDictNotRequiredAccess]
-
-    # if subfolders:
-    #     prefix: Any = next(iter(subfolders))
     lookup_subfolders("", bucket_name, s3_client, folder_paths)
     return folder_paths
 
 def compare_bucket_folders(source_folders: set[str], dest_folders: set[str]) -> list[str]:
-    missing_folders: list[str] = []
-
-    for path in source_folders:
-        if path not in dest_folders:
-            missing_folders.append(path)
-    
+    missing_folders: list[str] = list(source_folders - dest_folders)
     return missing_folders
 
 def add_missing_folders(destination_bucket: str, missing_folders: list[str], dest_s3_client: S3Client) -> None:
@@ -69,9 +54,9 @@ def sync_buckets(source_s3_client: S3Client, destination_s3_client: S3Client) ->
     add_missing_folders(DESTINATION_BUCKET, missing_folders, destination_s3_client)
     return missing_folders
 
-def list_missing_folders(missing_folders: list[str]) -> None:
-    for item in missing_folders:
-        print(item)
+def list_folders(folders: list[str]) -> None:
+    for folder in folders:
+        print(folder)
 
 def main() -> None:
     dev_session = boto3.Session(profile_name=DESTINATION_PROFILE)
@@ -80,9 +65,9 @@ def main() -> None:
     prod_session = boto3.Session(profile_name=SOURCE_PROFILE)
     s3_prod = prod_session.client('s3')
 
-    #print(sync_buckets(s3_prod, s3_dev))
-    #print(sync_buckets(s3_prod, s3_dev))
-    print(get_bucket_folders(SOURCE_BUCKET, s3_prod))
+    missing_folders: list[str] = sync_buckets(s3_prod, s3_dev)
+    list_folders(missing_folders)
+    #print(get_bucket_folders(SOURCE_BUCKET, s3_prod))
 
 
 if __name__ == "__main__":
