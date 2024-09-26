@@ -48,6 +48,7 @@ def sync_buckets(source_s3_client: S3Client, destination_s3_client: S3Client) ->
 
 def print_missing_folders(folders: list[str]) -> None:
     if not folders:
+        print("The folders list is empty.")
         return
     print("The following folders were added to the destination bucket:")
     folders.sort()
