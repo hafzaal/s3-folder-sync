@@ -8,12 +8,6 @@ DESTINATION_BUCKET: str = "b1-ncloud-dev"
 SOURCE_PROFILE: str = "prod"
 DESTINATION_PROFILE: str = "dev"
 
-# Initial call is with prefix "" and delimiter
-# From initial call, we will get a response that will contain CommonPrefixes, that will contain all the subfolders.
-# We then go through each common prefix/subfolder and make the call again but this time, prefix = commonPrefix and delim = /
-# while, response.commonprefix isn't empty
-# We keep doing this until we have all the subfolders.
-
 def lookup_subfolders(current_folder: str, bucket_name: str, s3_client: S3Client, folder_paths: set[str]) -> None:
     paginator = s3_client.get_paginator('list_objects_v2')
     for page in paginator.paginate(Bucket=bucket_name, Prefix=current_folder, Delimiter='/'):
@@ -67,8 +61,6 @@ def main() -> None:
 
     missing_folders: list[str] = sync_buckets(s3_prod, s3_dev)
     list_folders(missing_folders)
-    #print(get_bucket_folders(SOURCE_BUCKET, s3_prod))
-
 
 if __name__ == "__main__":
     main()
