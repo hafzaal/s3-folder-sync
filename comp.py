@@ -19,7 +19,6 @@ def lookup_subfolders(current_folder: str, bucket_name: str, s3_client: S3Client
             folder_paths.add(folder_name)
             lookup_subfolders(folder_name, bucket_name, s3_client, folder_paths)
 
-
 def get_bucket_folders(bucket_name: str, s3_client: S3Client) -> set[str]:
     folder_paths: set[str] = set()
     lookup_subfolders("", bucket_name, s3_client, folder_paths)
@@ -34,11 +33,10 @@ def add_missing_folders(destination_bucket: str, missing_folders: list[str], des
     if not missing_folders:
         print(f"All folders already exist in destination bucket <{destination_bucket}>.")
         return
-    for item in missing_folders:
-        dest_s3_client.put_object(Bucket=destination_bucket, Key=item)
+    for folder_name in missing_folders:
+        dest_s3_client.put_object(Bucket=destination_bucket, Key=folder_name)
         count += 1
     print(f"{count} folders added to bucket:{destination_bucket}")
-
 
 def sync_buckets(source_s3_client: S3Client, destination_s3_client: S3Client) -> list[str]:
     source_folders: set[str] = get_bucket_folders(SOURCE_BUCKET, source_s3_client)
@@ -48,7 +46,11 @@ def sync_buckets(source_s3_client: S3Client, destination_s3_client: S3Client) ->
     add_missing_folders(DESTINATION_BUCKET, missing_folders, destination_s3_client)
     return missing_folders
 
-def list_folders(folders: list[str]) -> None:
+def print_missing_folders(folders: list[str]) -> None:
+    if not folders:
+        return
+    print("The following folders were added to the destination bucket:")
+    folders.sort()
     for folder in folders:
         print(folder)
 
@@ -60,7 +62,7 @@ def main() -> None:
     s3_prod = prod_session.client('s3')
 
     missing_folders: list[str] = sync_buckets(s3_prod, s3_dev)
-    list_folders(missing_folders)
+    print_missing_folders(missing_folders)
 
 if __name__ == "__main__":
     main()
