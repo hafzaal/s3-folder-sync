@@ -7,6 +7,7 @@ SOURCE_BUCKET: str = "b2-nc-prod"
 DESTINATION_BUCKET: str = "b1-ncloud-dev"
 SOURCE_PROFILE: str = "prod"
 DESTINATION_PROFILE: str = "dev"
+STARTING_FOLDER: str = ""
 
 def lookup_subfolders(current_folder: str, bucket_name: str, s3_client: S3Client, folder_paths: set[str]) -> None:
     paginator = s3_client.get_paginator('list_objects_v2')
@@ -19,24 +20,24 @@ def lookup_subfolders(current_folder: str, bucket_name: str, s3_client: S3Client
             folder_paths.add(folder_name)
             lookup_subfolders(folder_name, bucket_name, s3_client, folder_paths)
 
-def get_bucket_folders(bucket_name: str, s3_client: S3Client) -> set[str]:
+def get_bucket_folders(bucket_name: str, s3_client: S3Client, starting_folder: str="") -> set[str]:
     folder_paths: set[str] = set()
-    lookup_subfolders("", bucket_name, s3_client, folder_paths)
+    lookup_subfolders(starting_folder, bucket_name, s3_client, folder_paths)
     return folder_paths
 
 def compare_bucket_folders(source_folders: set[str], dest_folders: set[str]) -> list[str]:
     missing_folders: list[str] = list(source_folders - dest_folders)
     return missing_folders
 
-def add_missing_folders(destination_bucket: str, missing_folders: list[str], dest_s3_client: S3Client) -> None:
+def add_missing_folders(bucket_name: str, missing_folders: list[str], s3_client: S3Client) -> None:
     count: int = 0
     if not missing_folders:
-        print(f"All folders already exist in destination bucket <{destination_bucket}>.")
+        print(f"All folders already exist in bucket <{bucket_name}>.")
         return
     for folder_name in missing_folders:
-        dest_s3_client.put_object(Bucket=destination_bucket, Key=folder_name)
+        s3_client.put_object(Bucket=bucket_name, Key=folder_name)
         count += 1
-    print(f"{count} folders added to bucket:{destination_bucket}")
+    print(f"{count} folders added to bucket:{bucket_name}")
 
 def sync_buckets(source_s3_client: S3Client, destination_s3_client: S3Client) -> list[str]:
     source_folders: set[str] = get_bucket_folders(SOURCE_BUCKET, source_s3_client)
