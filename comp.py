@@ -3,16 +3,16 @@ from mypy_boto3_s3.client import S3Client
 
 from typing import Any
 
-SOURCE_BUCKET: str = "b2-nc-prod"
-DESTINATION_BUCKET: str = "b1-ncloud-dev"
-
 SOURCE_PROFILE: str = "prod"
 DESTINATION_PROFILE: str = "dev"
+
+SOURCE_BUCKET: str = "b2-nc-prod"
+DESTINATION_BUCKET: str = "b1-ncloud-dev"
 
 SOURCE_ROOT_DIRECTORY: str = "CDSP Help - PSDI Aide/"
 DESTINATION_ROOT_DIRECTORY: str = "Test"
 
-INCLUDE_SOURCE_IN_PATH: bool = False
+INCLUDE_ROOT_IN_PATH: bool = False
 
 def lookup_subfolders(current_folder: str, bucket_name: str, s3_client: S3Client, folder_paths: set[str]) -> None:
     paginator = s3_client.get_paginator('list_objects_v2')
@@ -40,7 +40,7 @@ def add_missing_folders(bucket_name: str, missing_folders: list[str], s3_client:
         print(f"All folders already exist in bucket <{bucket_name}>.")
         return
     for folder_name in missing_folders:
-        if not INCLUDE_SOURCE_IN_PATH:
+        if not INCLUDE_ROOT_IN_PATH:
             folder_name = folder_name.removeprefix(SOURCE_ROOT_DIRECTORY)
         if DESTINATION_ROOT_DIRECTORY:
             folder_name = f"{DESTINATION_ROOT_DIRECTORY}/{folder_name}"
