@@ -2,15 +2,15 @@ import boto3
 from mypy_boto3_s3.client import S3Client
 from typing import NamedTuple
 
+class Custom_Root(NamedTuple):
+    IS_CUSTOM_ROOT: bool
+    NAME: str
+
 SOURCE_AWS_PROFILE: str = "prod"
 DESTINATION_AWS_PROFILE: str = "dev"
 
 SOURCE_BUCKET: str = "b2-nc-prod"
 DESTINATION_BUCKET: str = "b1-ncloud-dev"
-
-class Custom_Root(NamedTuple):
-    IS_CUSTOM_ROOT: bool
-    NAME: str
 
 SOURCE_DIRECTORY = Custom_Root(IS_CUSTOM_ROOT=False, NAME="")
 DESTINATION_DIRECTORY = Custom_Root(IS_CUSTOM_ROOT=True, NAME="Test3/")
@@ -51,8 +51,14 @@ def add_missing_folders(bucket_name: str, missing_folders: list[str], s3_client:
     print(f"{count} folders added to bucket:{bucket_name}")
 
 def sync_buckets(source_s3_client: S3Client, destination_s3_client: S3Client) -> list[str]:
-    source_folders: set[str] = get_bucket_folders(SOURCE_DIRECTORY.NAME, SOURCE_BUCKET, source_s3_client, SOURCE_DIRECTORY.NAME)
-    dest_folders: set[str] = get_bucket_folders(DESTINATION_DIRECTORY.NAME, DESTINATION_BUCKET, destination_s3_client, DESTINATION_DIRECTORY.NAME)
+    source_folders: set[str] = get_bucket_folders(starting_folder=SOURCE_DIRECTORY.NAME,
+                                                  bucket_name=SOURCE_BUCKET,
+                                                  s3_client=source_s3_client,
+                                                  root_folder=SOURCE_DIRECTORY.NAME)
+    dest_folders: set[str] = get_bucket_folders(starting_folder=DESTINATION_DIRECTORY.NAME,
+                                                bucket_name=DESTINATION_BUCKET,
+                                                s3_client=destination_s3_client,
+                                                root_folder=DESTINATION_DIRECTORY.NAME)
     missing_folders: list[str] = compare_bucket_folders(source_folders, dest_folders)
     
     add_missing_folders(DESTINATION_BUCKET, missing_folders, destination_s3_client)
