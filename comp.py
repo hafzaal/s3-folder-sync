@@ -8,15 +8,12 @@ DESTINATION_PROFILE: str = "dev"
 SOURCE_BUCKET: str = "b2-nc-prod"
 DESTINATION_BUCKET: str = "b1-ncloud-dev"
 
-SET_ROOT = NamedTuple("SET_ROOT", [("IS_CUSTOM_ROOT", bool), ("NAME", str)])
 class Custom_Root(NamedTuple):
     IS_CUSTOM_ROOT: bool
     NAME: str
 
-
-SOURCE_ROOT_DIRECTORY: str = ""
 SOURCE_DIRECTORY = Custom_Root(IS_CUSTOM_ROOT=False, NAME="")
-DESTINATION_DIRECTORY = Custom_Root(IS_CUSTOM_ROOT=True, NAME="Test/")
+DESTINATION_DIRECTORY = Custom_Root(IS_CUSTOM_ROOT=True, NAME="Test3/")
 
 #tuple[bool, str] = (True, "Test/"
 from pathlib import Path
@@ -66,7 +63,7 @@ def add_missing_folders(bucket_name: str, missing_folders: list[str], s3_client:
     print(f"{count} folders added to bucket:{bucket_name}")
 
 def sync_buckets(source_s3_client: S3Client, destination_s3_client: S3Client) -> list[str]:
-    source_folders: set[str] = get_bucket_folders(SOURCE_ROOT_DIRECTORY, SOURCE_BUCKET, source_s3_client, SOURCE_ROOT_DIRECTORY)
+    source_folders: set[str] = get_bucket_folders(SOURCE_DIRECTORY.NAME, SOURCE_BUCKET, source_s3_client, SOURCE_DIRECTORY.NAME)
     dest_folders: set[str] = get_bucket_folders(DESTINATION_DIRECTORY.NAME, DESTINATION_BUCKET, destination_s3_client, DESTINATION_DIRECTORY.NAME)
     missing_folders: list[str] = compare_bucket_folders(source_folders, dest_folders)
     
