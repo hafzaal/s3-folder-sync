@@ -1,25 +1,6 @@
 import boto3
 from mypy_boto3_s3.client import S3Client
-from typing import NamedTuple
-
-class Custom_Root(NamedTuple):
-    IS_CUSTOM_ROOT: bool
-    NAME: str
-
-import configparser
-Config = configparser.ConfigParser()
-Config.read("./Config.ini")
-
-SOURCE_AWS_PROFILE: str = Config.get("AwsProfiles", "SourceProfile")
-DESTINATION_AWS_PROFILE: str = Config.get("AwsProfiles", "DestinationProfile")
-
-SOURCE_BUCKET: str = Config.get("AwsBuckets", "SourceBucketName")
-DESTINATION_BUCKET: str = Config.get("AwsBuckets", "DestinationBucketName")
-
-SOURCE_DIRECTORY = Custom_Root(IS_CUSTOM_ROOT=Config.getboolean("RootDirectories", "UseCustomSourceDirectory"),
-                               NAME=Config.get("RootDirectories", "CustomSourceDirectoryPath"))
-DESTINATION_DIRECTORY = Custom_Root(IS_CUSTOM_ROOT=Config.getboolean("RootDirectories", "UseCustomDestinationDirectory"),
-                                    NAME=Config.get("RootDirectories", "CustomDestinationDirectoryPath"))
+from config import *
 
 def lookup_subfolders(current_folder: str, bucket_name: str, s3_client: S3Client, folder_paths: set[str], root_folder: str) -> None:
     paginator = s3_client.get_paginator('list_objects_v2')
@@ -75,6 +56,11 @@ def sync_buckets(source_s3_client: S3Client, destination_s3_client: S3Client) ->
     return missing_folders
 
 def print_missing_folders(folders: list[str]) -> None:
+    """Prints the list of folders specified by the user in a sorted order.
+
+    Args:
+        folders (list[str]): A list containing folder names.
+    """
     if not folders:
         print("No folders to print. The folders list is empty.")
         return
@@ -84,6 +70,12 @@ def print_missing_folders(folders: list[str]) -> None:
         print(folder)
 
 def are_root_directories_valid() -> bool:
+    """Checks whether the root directories specified in the config file are setup correctly.
+    The root directory NamedTuple requires both variables to be set correctly.
+    Returns:
+        bool: True if the root directory are valid and have correct values. False if the
+        variables have incorrect values.
+    """
     if ((not SOURCE_DIRECTORY.IS_CUSTOM_ROOT and SOURCE_DIRECTORY.NAME or
          SOURCE_DIRECTORY.IS_CUSTOM_ROOT and not SOURCE_DIRECTORY.NAME) or
         (not DESTINATION_DIRECTORY.IS_CUSTOM_ROOT and DESTINATION_DIRECTORY.NAME or
@@ -92,7 +84,6 @@ def are_root_directories_valid() -> bool:
     return True
 
 def main() -> None:
-    print(Config.sections())
     if not are_root_directories_valid():
         print("The source or destination directories aren't specified correctly. Check directory variables and try again.")
         return
