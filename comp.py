@@ -1,8 +1,6 @@
 import boto3
 from mypy_boto3_s3.client import S3Client
-from collections import namedtuple
-
-from typing import Any
+from typing import NamedTuple
 
 SOURCE_PROFILE: str = "prod"
 DESTINATION_PROFILE: str = "dev"
@@ -10,10 +8,12 @@ DESTINATION_PROFILE: str = "dev"
 SOURCE_BUCKET: str = "b2-nc-prod"
 DESTINATION_BUCKET: str = "b1-ncloud-dev"
 
-SOURCE_ROOT_DIRECTORY: str = ""
+SET_ROOT = NamedTuple("SET_ROOT", [("SET_CUSTOM_ROOT", bool), ("NAME", str)])
 
-SET_ROOT = namedtuple("SET_ROOT", ["SET_CUSTOM_ROOT", "NAME"])
-DESTINATION_ROOT = SET_ROOT(True, "Test/")
+SOURCE_ROOT_DIRECTORY: str = ""
+SOURCE_ROOT = SET_ROOT(SET_CUSTOM_ROOT=False, NAME="")
+
+DESTINATION_ROOT = SET_ROOT(SET_CUSTOM_ROOT=True, NAME="Test/")
 
 #tuple[bool, str] = (True, "Test/"
 from pathlib import Path
