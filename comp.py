@@ -23,7 +23,7 @@ def lookup_subfolders(current_folder: str, bucket_name: str, s3_client: S3Client
             return
         for folder in subfolders:
             folder_name: str = folder["Prefix"] # pyright: ignore [reportTypedDictNotRequiredAccess]
-            if root_folder == DESTINATION_DIRECTORY.NAME:
+            if root_folder and root_folder == DESTINATION_DIRECTORY.NAME:
                 folder_paths.add(folder_name.removeprefix(root_folder))
             else:
                 folder_paths.add(folder_name)
