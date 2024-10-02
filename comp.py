@@ -8,12 +8,15 @@ DESTINATION_PROFILE: str = "dev"
 SOURCE_BUCKET: str = "b2-nc-prod"
 DESTINATION_BUCKET: str = "b1-ncloud-dev"
 
-SET_ROOT = NamedTuple("SET_ROOT", [("SET_CUSTOM_ROOT", bool), ("NAME", str)])
+SET_ROOT = NamedTuple("SET_ROOT", [("IS_CUSTOM_ROOT", bool), ("NAME", str)])
+class Custom_Root(NamedTuple):
+    IS_CUSTOM_ROOT: bool
+    NAME: str
+
 
 SOURCE_ROOT_DIRECTORY: str = ""
-SOURCE_ROOT = SET_ROOT(SET_CUSTOM_ROOT=False, NAME="")
-
-DESTINATION_ROOT = SET_ROOT(SET_CUSTOM_ROOT=True, NAME="Test/")
+SOURCE_DIRECTORY = Custom_Root(IS_CUSTOM_ROOT=False, NAME="")
+DESTINATION_DIRECTORY = Custom_Root(IS_CUSTOM_ROOT=True, NAME="Test/")
 
 #tuple[bool, str] = (True, "Test/"
 from pathlib import Path
@@ -35,7 +38,7 @@ def lookup_subfolders(current_folder: str, bucket_name: str, s3_client: S3Client
             return
         for folder in subfolders:
             folder_name: str = folder["Prefix"] # pyright: ignore [reportTypedDictNotRequiredAccess]
-            if root_folder == DESTINATION_ROOT.NAME:
+            if root_folder == DESTINATION_DIRECTORY.NAME:
                 folder_paths.add(folder_name.removeprefix(root_folder))
             else:
                 folder_paths.add(folder_name)
@@ -56,15 +59,15 @@ def add_missing_folders(bucket_name: str, missing_folders: list[str], s3_client:
         print(f"All folders already exist in bucket <{bucket_name}>.")
         return
     for folder_name in missing_folders:
-        if DESTINATION_ROOT.SET_CUSTOM_ROOT:
-            folder_name = f"{DESTINATION_ROOT.NAME}{folder_name}"
+        if DESTINATION_DIRECTORY.IS_CUSTOM_ROOT:
+            folder_name = f"{DESTINATION_DIRECTORY.NAME}{folder_name}"
         s3_client.put_object(Bucket=bucket_name, Key=folder_name)
         count += 1
     print(f"{count} folders added to bucket:{bucket_name}")
 
 def sync_buckets(source_s3_client: S3Client, destination_s3_client: S3Client) -> list[str]:
     source_folders: set[str] = get_bucket_folders(SOURCE_ROOT_DIRECTORY, SOURCE_BUCKET, source_s3_client, SOURCE_ROOT_DIRECTORY)
-    dest_folders: set[str] = get_bucket_folders(DESTINATION_ROOT.NAME, DESTINATION_BUCKET, destination_s3_client, DESTINATION_ROOT.NAME)
+    dest_folders: set[str] = get_bucket_folders(DESTINATION_DIRECTORY.NAME, DESTINATION_BUCKET, destination_s3_client, DESTINATION_DIRECTORY.NAME)
     missing_folders: list[str] = compare_bucket_folders(source_folders, dest_folders)
     
     add_missing_folders(DESTINATION_BUCKET, missing_folders, destination_s3_client)
