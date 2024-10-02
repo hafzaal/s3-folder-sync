@@ -6,14 +6,20 @@ class Custom_Root(NamedTuple):
     IS_CUSTOM_ROOT: bool
     NAME: str
 
-SOURCE_AWS_PROFILE: str = "prod"
-DESTINATION_AWS_PROFILE: str = "dev"
+import configparser
+Config = configparser.ConfigParser()
+Config.read("./Config.ini")
 
-SOURCE_BUCKET: str = "b2-nc-prod"
-DESTINATION_BUCKET: str = "b1-ncloud-dev"
+SOURCE_AWS_PROFILE: str = Config.get("AwsProfiles", "SourceProfile")
+DESTINATION_AWS_PROFILE: str = Config.get("AwsProfiles", "DestinationProfile")
 
-SOURCE_DIRECTORY = Custom_Root(IS_CUSTOM_ROOT=False, NAME="")
-DESTINATION_DIRECTORY = Custom_Root(IS_CUSTOM_ROOT=False, NAME="")
+SOURCE_BUCKET: str = Config.get("AwsBuckets", "SourceBucketName")
+DESTINATION_BUCKET: str = Config.get("AwsBuckets", "DestinationBucketName")
+
+SOURCE_DIRECTORY = Custom_Root(IS_CUSTOM_ROOT=Config.getboolean("RootDirectories", "UseCustomSourceDirectory"),
+                               NAME=Config.get("RootDirectories", "CustomSourceDirectoryPath"))
+DESTINATION_DIRECTORY = Custom_Root(IS_CUSTOM_ROOT=Config.getboolean("RootDirectories", "UseCustomDestinationDirectory"),
+                                    NAME=Config.get("RootDirectories", "CustomDestinationDirectoryPath"))
 
 def lookup_subfolders(current_folder: str, bucket_name: str, s3_client: S3Client, folder_paths: set[str], root_folder: str) -> None:
     paginator = s3_client.get_paginator('list_objects_v2')
@@ -77,7 +83,7 @@ def print_missing_folders(folders: list[str]) -> None:
     for folder in folders:
         print(folder)
 
-def are_valid_directories() -> bool:
+def are_root_directories_valid() -> bool:
     if ((not SOURCE_DIRECTORY.IS_CUSTOM_ROOT and SOURCE_DIRECTORY.NAME or
          SOURCE_DIRECTORY.IS_CUSTOM_ROOT and not SOURCE_DIRECTORY.NAME) or
         (not DESTINATION_DIRECTORY.IS_CUSTOM_ROOT and DESTINATION_DIRECTORY.NAME or
@@ -86,7 +92,8 @@ def are_valid_directories() -> bool:
     return True
 
 def main() -> None:
-    if not are_valid_directories():
+    print(Config.sections())
+    if not are_root_directories_valid():
         print("The source or destination directories aren't specified correctly. Check directory variables and try again.")
         return
     dev_session = boto3.Session(profile_name=DESTINATION_AWS_PROFILE)
