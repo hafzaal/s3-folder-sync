@@ -13,7 +13,7 @@ SOURCE_BUCKET: str = "b2-nc-prod"
 DESTINATION_BUCKET: str = "b1-ncloud-dev"
 
 SOURCE_DIRECTORY = Custom_Root(IS_CUSTOM_ROOT=False, NAME="")
-DESTINATION_DIRECTORY = Custom_Root(IS_CUSTOM_ROOT=True, NAME="Test3/")
+DESTINATION_DIRECTORY = Custom_Root(IS_CUSTOM_ROOT=False, NAME="")
 
 def lookup_subfolders(current_folder: str, bucket_name: str, s3_client: S3Client, folder_paths: set[str], root_folder: str) -> None:
     paginator = s3_client.get_paginator('list_objects_v2')
@@ -51,16 +51,20 @@ def add_missing_folders(bucket_name: str, missing_folders: list[str], s3_client:
     print(f"{count} folders added to bucket:{bucket_name}")
 
 def sync_buckets(source_s3_client: S3Client, destination_s3_client: S3Client) -> list[str]:
+    print("Getting source bucket folders...")
     source_folders: set[str] = get_bucket_folders(starting_folder=SOURCE_DIRECTORY.NAME,
                                                   bucket_name=SOURCE_BUCKET,
                                                   s3_client=source_s3_client,
                                                   root_folder=SOURCE_DIRECTORY.NAME)
+    print("Getting destination bucket folders...")
     dest_folders: set[str] = get_bucket_folders(starting_folder=DESTINATION_DIRECTORY.NAME,
                                                 bucket_name=DESTINATION_BUCKET,
                                                 s3_client=destination_s3_client,
                                                 root_folder=DESTINATION_DIRECTORY.NAME)
+    print("Finding missing folders...")
     missing_folders: list[str] = compare_bucket_folders(source_folders, dest_folders)
     
+    print("Adding missing folders to destination bucket...")
     add_missing_folders(DESTINATION_BUCKET, missing_folders, destination_s3_client)
     return missing_folders
 
@@ -73,7 +77,18 @@ def print_missing_folders(folders: list[str]) -> None:
     for folder in folders:
         print(folder)
 
+def are_valid_directories() -> bool:
+    if ((not SOURCE_DIRECTORY.IS_CUSTOM_ROOT and SOURCE_DIRECTORY.NAME or
+         SOURCE_DIRECTORY.IS_CUSTOM_ROOT and not SOURCE_DIRECTORY.NAME) or
+        (not DESTINATION_DIRECTORY.IS_CUSTOM_ROOT and DESTINATION_DIRECTORY.NAME or
+         DESTINATION_DIRECTORY.IS_CUSTOM_ROOT and not DESTINATION_DIRECTORY.NAME)):
+        return False
+    return True
+
 def main() -> None:
+    if not are_valid_directories():
+        print("The source or destination directories aren't specified correctly. Check directory variables and try again.")
+        return
     dev_session = boto3.Session(profile_name=DESTINATION_AWS_PROFILE)
     s3_dev = dev_session.client('s3')
 
