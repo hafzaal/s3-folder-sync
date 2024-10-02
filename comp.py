@@ -15,19 +15,7 @@ class Custom_Root(NamedTuple):
 SOURCE_DIRECTORY = Custom_Root(IS_CUSTOM_ROOT=False, NAME="")
 DESTINATION_DIRECTORY = Custom_Root(IS_CUSTOM_ROOT=True, NAME="Test3/")
 
-#tuple[bool, str] = (True, "Test/"
-from pathlib import Path
-
-def remove_root_folder(path_str: str) -> str:
-    path: Path = Path(path_str)
-    parts: tuple[str, ...] = path.parts
-    if len(parts) > 1:
-        new_path = Path(*parts[1:])
-        return str(new_path)
-    else:
-        return path_str
-
-def lookup_subfolders(current_folder: str, bucket_name: str, s3_client: S3Client, folder_paths: set[str], root_folder: str="") -> None:
+def lookup_subfolders(current_folder: str, bucket_name: str, s3_client: S3Client, folder_paths: set[str], root_folder: str) -> None:
     paginator = s3_client.get_paginator('list_objects_v2')
     for page in paginator.paginate(Bucket=bucket_name, Prefix=current_folder, Delimiter='/'):
         subfolders = page.get("CommonPrefixes", None) # pyright: ignore [reportTypedDictNotRequiredAccess]
@@ -41,7 +29,7 @@ def lookup_subfolders(current_folder: str, bucket_name: str, s3_client: S3Client
                 folder_paths.add(folder_name)
             lookup_subfolders(folder_name, bucket_name, s3_client, folder_paths, root_folder)
 
-def get_bucket_folders(starting_folder: str, bucket_name: str, s3_client: S3Client, root_folder: str="") -> set[str]:
+def get_bucket_folders(starting_folder: str, bucket_name: str, s3_client: S3Client, root_folder: str) -> set[str]:
     folder_paths: set[str] = set()
     lookup_subfolders(starting_folder, bucket_name, s3_client, folder_paths, root_folder)
     return folder_paths
