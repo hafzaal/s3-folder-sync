@@ -414,3 +414,5 @@ FodyWeavers.xsd
 .devcontainer
 
 .mypy_cache
+
+.vscode
