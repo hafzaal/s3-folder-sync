@@ -2,8 +2,8 @@ import boto3
 from mypy_boto3_s3.client import S3Client
 from typing import NamedTuple
 
-SOURCE_PROFILE: str = "prod"
-DESTINATION_PROFILE: str = "dev"
+SOURCE_AWS_PROFILE: str = "prod"
+DESTINATION_AWS_PROFILE: str = "dev"
 
 SOURCE_BUCKET: str = "b2-nc-prod"
 DESTINATION_BUCKET: str = "b1-ncloud-dev"
@@ -68,10 +68,10 @@ def print_missing_folders(folders: list[str]) -> None:
         print(folder)
 
 def main() -> None:
-    dev_session = boto3.Session(profile_name=DESTINATION_PROFILE)
+    dev_session = boto3.Session(profile_name=DESTINATION_AWS_PROFILE)
     s3_dev = dev_session.client('s3')
 
-    prod_session = boto3.Session(profile_name=SOURCE_PROFILE)
+    prod_session = boto3.Session(profile_name=SOURCE_AWS_PROFILE)
     s3_prod = prod_session.client('s3')
 
     missing_folders: list[str] = sync_buckets(s3_prod, s3_dev)
