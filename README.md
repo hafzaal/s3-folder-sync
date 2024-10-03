@@ -26,14 +26,35 @@ This script copies the folder structure (empty folders and subfolders) from one 
 
 ### 1. Clone the Repository
 
-First, clone this repository to your local machine:
+First, clone this repository to your local machine using git bash. Open git bash, and navigate to the folder you want to clone the repository:
 
 ```bash
-git clone https://github.com/your-username/your-repo-name.git
+cd path/to/folder
+```
+
+Then, clone the repository using the https git repoistory url and navigate to the new directory.
+
+```bash
+git clone repo-url
 cd your-repo-name
 ```
 
-Replace `your-username` and `your-repo-name` with your GitHub username and the repository name, respectively.
+Enter the following to check if the repository was copied successfully:
+
+```bash
+ls -la
+```
+
+The terminal should show the following files and folders in the ouput:
+
+```
+.
+├── .devcontainer
+├── .gitignore
+├── compy.py
+├── config.py
+└── README.me
+```
 
 ### 2. Create AWS Credentials
 
