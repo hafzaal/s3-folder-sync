@@ -13,27 +13,28 @@ class Custom_Root(NamedTuple):
 ##### AWS CLI Profiles
 # The profiles can belong to different or same accounts. If using same account, set both variables to same value.
 ## SOURCE_AWS_PROFILE: The AWS profile, created using AWS CLI, for the source bucket.
-SOURCE_AWS_PROFILE: str = "prod"
+SOURCE_AWS_PROFILE: str = ""
 ## DESTINATION_AWS_PROFILE: The AWS profile, created using AWS CLI, for the destination bucket.
-DESTINATION_AWS_PROFILE: str = "dev"
+DESTINATION_AWS_PROFILE: str = ""
 
 #######################################################################
 
 ##### AWS Bucket Names
 ## Source Bucket: The bucket where the folders will be copied from.
-SOURCE_BUCKET: str = "b2-nc-prod"
+SOURCE_BUCKET: str = ""
 ## Destination Bucket: The bucket where folders will be copied to.
-DESTINATION_BUCKET: str = "b1-ncloud-dev"
+DESTINATION_BUCKET: str = ""
 
 
 #######################################################################
 
 ##### Root Directory Names
-# Use empty string for root.
+# Default/non-custom value for root directory: ""
 # The IS_CUSTOM_ROOT bool must be set alongside the NAME variable.
+#   If you set a custom root, set bool to True.
 ## Source Directory: The root directory where the folder search will begin..
-SOURCE_DIRECTORY = Custom_Root(IS_CUSTOM_ROOT=False, NAME="CDSP Help - PSDI Aide/")
+SOURCE_DIRECTORY = Custom_Root(IS_CUSTOM_ROOT=False, NAME="")
 ## Destination Directory: The directory where folders will be copied to.
-DESTINATION_DIRECTORY = Custom_Root(IS_CUSTOM_ROOT=True, NAME="Test2/Testing/")
+DESTINATION_DIRECTORY = Custom_Root(IS_CUSTOM_ROOT=False, NAME="")
 
 #######################################################################
