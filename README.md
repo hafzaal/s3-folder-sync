@@ -1,4 +1,4 @@
-# Copy S3 Folder Structure from One Bucket to Another
+# Amazon S3 Folder Sync - Copy S3 Folder Structure from One Bucket to Another
 
 This script copies the folder structure (empty folders and subfolders) from one Amazon S3 bucket to another. It does **not** copy the files within the folders—only the folder hierarchy. This tool recursively copies the folder hierarchy, ensuring that the destination bucket mirrors the source bucket's structure.
 
