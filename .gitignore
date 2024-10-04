@@ -411,14 +411,8 @@ FodyWeavers.xsd
 # Built Visual Studio Code Extensions
 *.vsix
 
-# Docker and devcontainer files
-.devcontainer
-
 # My-py typing cache
 .mypy_cache
 
 # VsCode settings
 .vscode
-
-# Ignore settings file to avoid commits to repo
-config.py
