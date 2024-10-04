@@ -1,6 +1,6 @@
 # Amazon S3 Folder Sync - Copy S3 Folder Structure from One Bucket to Another
 
-This script copies the folder structure (empty folders and subfolders) from one Amazon S3 bucket to another. It does **not** copy the files within the folders—only the folder hierarchy. This tool recursively copies the folder hierarchy, ensuring that the destination bucket mirrors the source bucket's structure.
+This script copies the folder structure (empty folders and subfolders) from one Amazon S3 bucket to another. It does **not** copy the files within the folders—only the folder hierarchy. The script recursively copies the folder hierarchy, ensuring that the destination bucket mirrors the source bucket's structure.
 
 ## Table of Contents
 
@@ -18,7 +18,7 @@ This script copies the folder structure (empty folders and subfolders) from one 
       - [AWS CLI Profiles](#aws-cli-profiles)
       - [AWS Bucket Names](#aws-bucket-names)
       - [Root Directory Names (Optional)](#root-directory-names-optional)
-    - [4. Install Dependencies](#4-install-dependencies)
+    - [4. Python Dependencies](#4-python-dependencies)
     - [5. VsCode Extensions](#5-vscode-extensions)
   - [Building and Running the Docker Container](#building-and-running-the-docker-container)
     - [1. Open the Project in VSCode](#1-open-the-project-in-vscode)
@@ -31,24 +31,28 @@ This script copies the folder structure (empty folders and subfolders) from one 
 
 ## Prerequisites
 
-- [Docker](https://www.docker.com/get-started). Ensure docker is installed on your machine.
-- [Visual Studio Code](https://code.visualstudio.com/). Install VsCode with the [Remote Development](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack) extension installed.
-- [Git bash](https://git-scm.com/downloads). To navigate local directories.
+- [Docker](https://www.docker.com/get-started). Ensure docker is installed on your machine and running before opening the project folder in VsCode.
+- [Visual Studio Code](https://code.visualstudio.com/). Install VsCode and add the [Remote Development](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.vscode-remote-extensionpack) extension to VsCode. For a minimal setup, only the [Microsoft devcontainer](https://marketplace.visualstudio.com/items?itemName=ms-vscode-remote.remote-containers) extension is needed.
+- [Git bash](https://git-scm.com/downloads). The guide uses Git bash to navigate local directories and run git based commands.
 
 ## Setup
 
 ### 1. Clone the Repository
 
-First, clone this repository to your local machine using git bash. Open git bash, and navigate to the folder you want to clone the repository:
+First, clone this repository to your local machine using git bash. Open git bash, and navigate to the folder where you want to clone the repository:
 
 ```bash
 cd path/to/folder
+
+e.g. to navigate to your Home directory type:
+
+cd ~
 ```
 
-Then, clone the repository using the https git repoistory url and navigate to the new directory.
+Then, clone the repository using the https git repoistory url (available above) and navigate to the new directory.
 
 ```bash
-git clone repo-url
+git clone https://aafc-git.agr.gc.ca/<your-username>/s3-folder-sync.git
 cd s3-folder-sync
 ```
 
@@ -71,7 +75,15 @@ The terminal should show the following files and folders in the ouput:
 
 ### 2. Create AWS Credentials
 
-The script requires AWS credentials to access the source and destination S3 buckets. You need to set up AWS profiles on your host machine inside a folder called .aws in your home directory. You can manually create the `.aws` directory with config and credentials files or install AWS CLI and use the `aws configure --profile <profile-name>` command to set both profiles. The following steps manually create both files:
+The script requires AWS credentials to access the source and destination S3 buckets. You need to set up AWS profiles on your host machine inside a folder called `.aws` in your host machine's home directory. To find the location of your home directory, open git bash and then type the following:
+
+```bash
+echo ~
+
+output -> /c/Users/afzaalh
+```
+
+You can manually create the `.aws` directory with config and credentials files or install AWS CLI and use the `aws configure --profile <profile-name>` command to set both profiles. The following steps manually create both files. If you already have the .aws folder and the respective files set up, skip to [Edit the `config` File](#c-edit-the-config-file):
 
 #### a. Create the `.aws` Directory
 
@@ -126,7 +138,9 @@ Replace the placeholders with your actual AWS access keys and session tokens.
 
 ### 3. Configure `config.py`
 
-The `config.py` file contains variables that need to be set before running the script.
+The `config.py` file contains variables that need to be set before running the script. These variables are used by `comp.py` to perform the sync operation. 
+
+> **Note:** Please ensure bucket and profile names are set correctly. Make sure that source and destination buckets point to the correct aws buckets.
 
 Open `config.py` using any text editor and set the following variables:
 
@@ -162,7 +176,7 @@ If you don't need a custom root, leave `IS_CUSTOM_ROOT` as `False` and `NAME` as
 > **Note:** Ensure that the root directories are specified correctly. If `IS_CUSTOM_ROOT` is `True`, `NAME` must not be empty, and vice versa.
 
 
-### 4. Install Dependencies
+### 4. Python Dependencies
 
 The Dockerfile automatically installs the necessary Python dependencies listed in `requirements.txt`. If you need to update dependencies, modify requirements.txt and rebuild the container.
 
@@ -218,7 +232,7 @@ With the container running and the environment set up, you can run the script.
    python3 comp.py
    ```
 
-The script will:
+The script will execute various function and perform the following actions:
 
 - Retrieve all folders and subfolders from the source and destination S3 buckets.
 - Compare the folder structure of source bucket with the destination S3 bucket.
@@ -241,7 +255,7 @@ The script will:
 
 - **AWS Credentials Not Found**: If the script cannot find AWS credentials, ensure that the `.aws` directory and its files are correctly mounted into the Docker container. The `devcontainer.json` file mounts the host's `.aws` directory into the container.
 
-- **Incorrect Root Directories**: If you receive an error saying `The source or destination directories aren't specified correctly`, double-check the `IS_CUSTOM_ROOT` and `NAME` variables in `config.py`.
+- **Incorrect Root Directories**: After running the script, if you see a message saying `The source or destination directories aren't specified correctly...`, double-check the `IS_CUSTOM_ROOT` and `NAME` variables in `config.py` for both source and destination directories.
 
 - **Docker Build Issues**: If you encounter errors while building the Docker container, ensure that Docker is running before staring VSCode/devcontainer.
 
