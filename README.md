@@ -4,17 +4,30 @@ This script copies the folder structure (empty folders and subfolders) from one 
 
 ## Table of Contents
 
-- [Prerequisites](#prerequisites)
-- [Setup](#setup)
-  - [1. Clone the Repository](#1-clone-the-repository)
-  - [2. Create AWS Credentials](#2-create-aws-credentials)
-  - [3. Configure `config.py`](#3-configure-configpy)
-  - [4. Install Dependencies](#4-install-dependencies)
-  - [5. VsCode Extensions](#5-vscode-extensions)
-- [Building and Running the Docker Container](#building-and-running-the-docker-container)
-- [Running the Script](#running-the-script)
-- [Notes](#notes)
-- [Troubleshooting](#troubleshooting)
+- [Amazon S3 Folder Sync - Copy S3 Folder Structure from One Bucket to Another](#amazon-s3-folder-sync---copy-s3-folder-structure-from-one-bucket-to-another)
+  - [Table of Contents](#table-of-contents)
+  - [Prerequisites](#prerequisites)
+  - [Setup](#setup)
+    - [1. Clone the Repository](#1-clone-the-repository)
+    - [2. Create AWS Credentials](#2-create-aws-credentials)
+      - [a. Create the `.aws` Directory](#a-create-the-aws-directory)
+      - [b. Create `config` and `credentials` Files](#b-create-config-and-credentials-files)
+      - [c. Edit the `config` File](#c-edit-the-config-file)
+      - [d. Edit the `credentials` File](#d-edit-the-credentials-file)
+    - [3. Configure `config.py`](#3-configure-configpy)
+      - [AWS CLI Profiles](#aws-cli-profiles)
+      - [AWS Bucket Names](#aws-bucket-names)
+      - [Root Directory Names (Optional)](#root-directory-names-optional)
+    - [4. Install Dependencies](#4-install-dependencies)
+    - [5. VsCode Extensions](#5-vscode-extensions)
+  - [Building and Running the Docker Container](#building-and-running-the-docker-container)
+    - [1. Open the Project in VSCode](#1-open-the-project-in-vscode)
+    - [2. Reopen in Container](#2-reopen-in-container)
+    - [3. Wait for the Container to Build](#3-wait-for-the-container-to-build)
+    - [4. Verify the Python Environment](#4-verify-the-python-environment)
+  - [Running the Script](#running-the-script)
+  - [Notes](#notes)
+  - [Troubleshooting](#troubleshooting)
 
 ## Prerequisites
 
@@ -36,7 +49,7 @@ Then, clone the repository using the https git repoistory url and navigate to th
 
 ```bash
 git clone repo-url
-cd your-repo-name
+cd s3-folder-sync
 ```
 
 Enter the following to check if the repository was copied successfully:
@@ -115,7 +128,7 @@ Replace the placeholders with your actual AWS access keys and session tokens.
 
 The `config.py` file contains variables that need to be set before running the script.
 
-Open `config.py` and set the following variables:
+Open `config.py` using any text editor and set the following variables:
 
 #### AWS CLI Profiles
 
