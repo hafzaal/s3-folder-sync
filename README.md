@@ -1,6 +1,6 @@
 # Amazon S3 Folder Sync - Copy S3 Folder Structure from One Bucket to Another
 
-This script copies the folder structure (empty folders and subfolders) from one Amazon S3 bucket to another. It does **not** copy the files within the folders—only the folder hierarchy. The script recursively copies the folder hierarchy, ensuring that the destination bucket mirrors the source bucket's structure.
+This script copies the folder structure (empty folders and subfolders) from one Amazon S3 bucket to another. It does **not** copy the files within the folders - only the folder hierarchy. The [Boto3](#https://github.com/boto/boto3) python library is utilized to interact with Amazon S3. The script recursively scans folders in each bucket, compares them for differences and copies folders from the source to destination bucket. The goal of the script is to ensure that the destination bucket contains every folder present in the source bucket, without deleting any files and/or folders in either bucket.
 
 ## Table of Contents
 
